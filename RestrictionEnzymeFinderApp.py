@@ -6,40 +6,45 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from RestrictionSites import find_restriction_sites
 
-
 class RestrictionEnzymeFinder(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Restriction Enzyme Finder")
+        self.setWindowTitle("Restriction Sites Finder (酶切位点搜寻)")
         self.resize(800, 600)  # Set the default size of the window
 
         # Define font size
         self.label_font_size = 10
         self.text_edit_font_size = 10
         self.table_height = 250  # Fixed height for the tables
+        self.widget_margin = 10  # Margin between widgets
 
         # Create main layout
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(self.widget_margin, self.widget_margin, self.widget_margin, self.widget_margin)
+        main_layout.setSpacing(self.widget_margin)
 
         # Create a text input widget
-        self.label = QLabel("Enter Gene Sequence:")
+        self.label = QLabel("Enter Gene Sequence (输入基因):")
         self.label.setFont(QFont("Arial", self.label_font_size))
+        self.label.setMaximumHeight(30)
         main_layout.addWidget(self.label)
 
         self.text_input = QTextEdit()
         self.text_input.setFont(QFont("Arial", self.text_edit_font_size))
         self.text_input.setLineWrapMode(QTextEdit.WidgetWidth)
+        self.text_input.setMaximumHeight(300)  # Set maximum height
         main_layout.addWidget(self.text_input)
 
         # Create a submit button
-        self.submit_button = QPushButton("Find Restriction Sites")
+        self.submit_button = QPushButton("Find Restriction Sites (开始搜寻酶切位点)")
         self.submit_button.setFont(QFont("Arial", self.label_font_size))
         self.submit_button.clicked.connect(self.on_submit)
         main_layout.addWidget(self.submit_button)
 
         # Create a results layout
         self.results_layout = QVBoxLayout()
+        self.results_layout.setSpacing(self.widget_margin)
         main_layout.addLayout(self.results_layout)
 
         # Create an error message label
@@ -58,7 +63,9 @@ class RestrictionEnzymeFinder(QMainWindow):
 
         # Validate the gene sequence
         if not self.is_valid_dna_sequence(gene_sequence):
-            self.error_label.setText("Error: Invalid DNA sequence. Please enter a sequence containing only A, T, C, G.")
+            self.error_label.setText(
+                "Error: Invalid DNA sequence. Please enter a sequence containing only A, T, C, G. \n错误： 无效DNA序列。请输入仅包含 A, T, C, G 的序列。"
+            )
             self.clear_results()
             return
         else:
@@ -69,7 +76,7 @@ class RestrictionEnzymeFinder(QMainWindow):
         self.clear_results()
 
         # Create the filter input after a successful submission
-        self.filter_label = QLabel("Filter Enzymes:")
+        self.filter_label = QLabel("Search Enzymes (搜寻酶):")
         self.filter_label.setFont(QFont("Arial", self.label_font_size))
         self.results_layout.addWidget(self.filter_label)
 
@@ -115,13 +122,13 @@ class RestrictionEnzymeFinder(QMainWindow):
         ]
 
         # Display results for matched enzymes
-        matched_label = QLabel("Matched Enzymes:")
+        matched_label = QLabel("Matched Enzymes (匹配的酶):")
         matched_label.setFont(QFont("Arial", self.label_font_size))
         self.results_layout.addWidget(matched_label)
 
         matched_table = QTableWidget()
         matched_table.setColumnCount(3)
-        matched_table.setHorizontalHeaderLabels(["Enzyme", "Cut Positions", "Sequence"])
+        matched_table.setHorizontalHeaderLabels(["Enzyme (酶)", "Cut Positions (酶切点)", "Sequence (序列)"])
         matched_table.setRowCount(len(filtered_matched_enzymes))
 
         for i, enzyme in enumerate(filtered_matched_enzymes):
@@ -140,13 +147,13 @@ class RestrictionEnzymeFinder(QMainWindow):
         self.results_layout.addWidget(matched_table)
 
         # Display results for unmatched enzymes
-        unmatched_label = QLabel("Enzymes that do not cut the gene sequence:")
+        unmatched_label = QLabel("Enzymes that do not cut the gene sequence (未匹配酶):")
         unmatched_label.setFont(QFont("Arial", self.label_font_size))
         self.results_layout.addWidget(unmatched_label)
 
         unmatched_table = QTableWidget()
         unmatched_table.setColumnCount(2)
-        unmatched_table.setHorizontalHeaderLabels(["Enzyme", "Sequence"])
+        unmatched_table.setHorizontalHeaderLabels(["Enzyme (酶)", "Sequence (序列)"])
         unmatched_table.setRowCount(len(filtered_unmatched_enzymes))
 
         for i, enzyme in enumerate(filtered_unmatched_enzymes):
