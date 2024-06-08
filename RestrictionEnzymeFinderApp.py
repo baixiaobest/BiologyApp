@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QHeaderView, QSizePolicy
 )
 from PyQt5.QtGui import QFont
-from RestrictionSites import find_restriction_sites
+from Utilities import find_restriction_sites
 
 class RestrictionEnzymeFinder(QMainWindow):
     def __init__(self):
