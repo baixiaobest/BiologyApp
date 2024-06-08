@@ -15,6 +15,9 @@ class MyTestCase(unittest.TestCase):
         protein_seq4 = "adMadefcMefde*ded*sdf"
         protein_list4 = [("efde", 8), ("adefcMefde", 2)]
 
+        protein_seq5 = "abdskjej*"
+        protein_list5 = []
+
         res1 = extract_possible_proteins_from_protein_sequence(protein_seq1)
         self.check(res1, protein_list1)
 
@@ -26,6 +29,9 @@ class MyTestCase(unittest.TestCase):
 
         res4 = extract_possible_proteins_from_protein_sequence(protein_seq4)
         self.check(res4, protein_list4)
+
+        res5 = extract_possible_proteins_from_protein_sequence(protein_seq5)
+        self.check(res5, protein_list5)
 
     def check(self, list1, list2):
         self.assertEqual(len(list1), len(list2))

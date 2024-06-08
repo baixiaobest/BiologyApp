@@ -1,16 +1,16 @@
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QLabel, QTextEdit, QTabWidget, QHBoxLayout
+    QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, QWidget, QLabel, QTextEdit, QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView
 )
 from PyQt5.QtGui import QFont
-from Utilities import translate_DNA_in_frames
+from Utilities import translate_DNA_in_frames, extract_possible_proteins_from_protein_sequence
 
 class DNAToProteinApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("DNA to Protein (DNA 转蛋白质)")
-        self.resize(800, 600)  # Set the default size of the window
+        self.resize(1200, 600)  # Set the default size of the window
 
         # Define font size
         self.label_font_size = 10
@@ -76,12 +76,16 @@ class DNAToProteinApp(QMainWindow):
 
         # Create Possible Proteins tab
         self.proteins_tab = QWidget()
-        self.proteins_tab_layout = QVBoxLayout(self.proteins_tab)
+        self.proteins_tab_layout = QHBoxLayout(self.proteins_tab)
 
-        self.proteins_output = QTextEdit()
-        self.proteins_output.setFont(QFont("Arial", self.text_edit_font_size))
-        self.proteins_output.setReadOnly(True)
-        self.proteins_tab_layout.addWidget(self.proteins_output)
+        self.frame1_proteins_table = self.create_protein_table("Frame 1 Proteins (读码框 1 蛋白)")
+        self.proteins_tab_layout.addWidget(self.frame1_proteins_table)
+
+        self.frame2_proteins_table = self.create_protein_table("Frame 2 Proteins (读码框 2 蛋白)")
+        self.proteins_tab_layout.addWidget(self.frame2_proteins_table)
+
+        self.frame3_proteins_table = self.create_protein_table("Frame 3 Proteins (读码框 3 蛋白)")
+        self.proteins_tab_layout.addWidget(self.frame3_proteins_table)
 
         self.tabs.addTab(self.proteins_tab, "Possible proteins (可能的蛋白)")
 
@@ -89,6 +93,22 @@ class DNAToProteinApp(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
+
+    def create_protein_table(self, label_text):
+        label = QLabel(label_text)
+        label.setFont(QFont("Arial", self.label_font_size))
+        table = QTableWidget()
+        table.setColumnCount(2)
+        table.setHorizontalHeaderLabels(["Protein sequence\n(蛋白序列)", "Index\n(蛋白位置)"])
+        header = table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(table)
+        container = QWidget()
+        container.setLayout(layout)
+        return container
 
     def translate_dna(self):
         dna_sequence = self.dna_input.toPlainText().strip()
@@ -99,7 +119,7 @@ class DNAToProteinApp(QMainWindow):
             self.frame1_output.setText(error_message)
             self.frame2_output.setText("")
             self.frame3_output.setText("")
-            self.proteins_output.setText("")
+            self.clear_protein_tables()
             return
 
         translations = translate_DNA_in_frames(dna_sequence)
@@ -108,8 +128,21 @@ class DNAToProteinApp(QMainWindow):
         self.frame3_output.setText(translations["Frame 3"])
 
         # Display possible proteins in the proteins tab
-        possible_proteins = "\n".join(translations.values())
-        self.proteins_output.setText(possible_proteins)
+        possible_proteins = {frame: extract_possible_proteins_from_protein_sequence(seq) for frame, seq in translations.items()}
+        self.update_protein_table(self.frame1_proteins_table.findChild(QTableWidget), possible_proteins["Frame 1"])
+        self.update_protein_table(self.frame2_proteins_table.findChild(QTableWidget), possible_proteins["Frame 2"])
+        self.update_protein_table(self.frame3_proteins_table.findChild(QTableWidget), possible_proteins["Frame 3"])
+
+    def update_protein_table(self, table, proteins):
+        table.setRowCount(len(proteins))
+        for row, (protein_seq, start_idx) in enumerate(proteins):
+            table.setItem(row, 0, QTableWidgetItem(protein_seq))
+            table.setItem(row, 1, QTableWidgetItem(str(start_idx)))
+
+    def clear_protein_tables(self):
+        self.frame1_proteins_table.findChild(QTableWidget).setRowCount(0)
+        self.frame2_proteins_table.findChild(QTableWidget).setRowCount(0)
+        self.frame3_proteins_table.findChild(QTableWidget).setRowCount(0)
 
     def is_valid_dna_sequence(self, sequence):
         valid_nucleotides = {'A', 'T', 'C', 'G'}

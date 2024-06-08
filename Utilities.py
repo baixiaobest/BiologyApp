@@ -45,8 +45,8 @@ def translate_DNA_in_frames(dna_sequence):
 def extract_possible_proteins_from_protein_sequence(seq):
     '''
     Given protein sequence, return possible protein sequence.
-    :param seq:
-    :return:
+    :param seq: protein string. Start codon is M and stop codon is *
+    :return: List of possible protein in (protein string, start index into original sequence)
     '''
     possible_proteins = []
     # (protein sequence string, index into the sequence)

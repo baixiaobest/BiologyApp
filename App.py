@@ -45,7 +45,7 @@ class MainMenu(QMainWindow):
 
     def create_button(self, text):
         button = QPushButton()
-        button.setFixedSize(QSize(100, 100))  # Make it a square button
+        button.setFixedSize(QSize(150, 150))  # Make it a square button
         button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         layout = QVBoxLayout(button)
