@@ -1,4 +1,4 @@
-from Bio.Restriction import AllEnzymes, RestrictionBatch
+from Bio.Restriction import AllEnzymes, CommOnly, RestrictionBatch
 from Bio.Seq import Seq
 
 def find_restriction_sites(gene_seq):
