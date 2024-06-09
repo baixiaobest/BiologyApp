@@ -42,14 +42,14 @@ The Genetic Engineering Toolbox is a desktop application designed to facilitate 
    ```
 ### Building the Application
 
-1. **Navigate to the Project Directory: Ensure you are in the root directory of the project where your Python scripts are located.
+1. **Navigate to the Project Directory**: Ensure you are in the root directory of the project where your Python scripts are located.
     ```
     cd <repository_directory>
     ```
 
-2. **Build the Application: Use PyInstaller to build the application. Run the following command:
+2. **Build the Application**: Use PyInstaller to build the application. Run the following command:
     ```
-    pyinstaller --name="基因工程工 具箱（汉化版）" --windowed --onefile App.py
+    pyinstaller --name="基因工程工具箱（汉化版）" --windowed --onefile App.py
     ```
 
-3. **Run the Executable: Navigate to the dist directory and run the executable file GeneticEngineeringToolbox.exe (on Windows) to launch the application.
+3. **Run the Executable**: Navigate to the dist directory and run the executable file 基因工程工具箱（汉化版）.exe (on Windows) to launch the application.
