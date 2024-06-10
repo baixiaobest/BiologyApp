@@ -1,6 +1,8 @@
 from Bio.Restriction import AllEnzymes, CommOnly, RestrictionBatch
 from Bio.Seq import Seq
 from collections import deque
+import os
+import sys
 
 def find_restriction_sites(gene_seq):
     # Convert gene sequence to Biopython Seq object
@@ -113,3 +115,9 @@ def extract_possible_proteins_from_DNA(dna_seq):
             })
 
     return frame_proteins
+
+def resource_path(relative_path):
+    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+

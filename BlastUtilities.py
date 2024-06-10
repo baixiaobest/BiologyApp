@@ -37,42 +37,48 @@ def create_blast_database(subject_file_path, db_path):
         print("Error creating BLAST database")
         exit()
 
-def perform_blast_search(query_file_path, db_path, task="blastn", dust="no", evalue=10, reward=1, penalty=-2, gapopen=5, gapextend=2, word_size=11):
+def perform_blast_search(query_file_path, db_path, task="blastn", dust="no",
+                         evalue=10, reward=1, penalty=-2, gapopen=5, gapextend=2, word_size=11):
+    # Adjusting parameters to ensure more sensitive search
     blastn_cmd = [
         "blastn",
         "-query", query_file_path,
         "-db", db_path,
         "-outfmt", "5",
         "-task", task,  # Using default blastn task for exact matches
-        "-dust", dust,  # Disabling low-complexity filter
+        "-dust", dust,      # Disabling low-complexity filter
         "-evalue", str(evalue),  # Setting a high e-value threshold to ensure hits are not filtered out
         "-reward", str(reward),  # Match reward
         "-penalty", str(penalty),  # Mismatch penalty
         "-gapopen", str(gapopen),  # Default gap open penalty
         "-gapextend", str(gapextend),  # Default gap extension penalty
-        "-word_size", str(word_size)  # Minimum number of nucleotides that must match exactly
+        "-word_size", str(word_size)  # Word size
     ]
     blastn_result = subprocess.run(blastn_cmd, capture_output=True, text=True)
+
     if blastn_result.returncode != 0:
-        print("Error performing BLAST search")
-        exit()
+        return {
+            "returncode": blastn_result.returncode,
+            "stderr": blastn_result.stderr
+        }
 
     result_handle = StringIO(blastn_result.stdout)
     blast_record = NCBIXML.read(result_handle)
+    return {
+        "returncode": 0,
+        "blast_record": blast_record
+    }
 
-    return blast_record
-
-def blast_sequence_against_database(query_sequence, db_path, **blast_params):
+def blast_sequence_against_database(query_sequence, db_path, **kwargs):
     with tempfile.TemporaryDirectory() as tmpdirname:
         query_file_path = os.path.join(tmpdirname, "query.fasta")
         # Write query sequence to a temporary file
         with open(query_file_path, "w") as query_file:
             query_file.write(query_sequence)
         # Perform BLAST search
-        blast_output = perform_blast_search(query_file_path, db_path, **blast_params)
-        return blast_output
+        return perform_blast_search(query_file_path, db_path, **kwargs)
 
-def blast_two_DNA(sequence1, sequence2, **blast_params):
+def blast_two_DNA(sequence1, sequence2, **kwargs):
     # Create temporary directory to store the files
     with tempfile.TemporaryDirectory() as tmpdirname:
         query_file_path = f"{tmpdirname}/query.fasta"
@@ -90,6 +96,4 @@ def blast_two_DNA(sequence1, sequence2, **blast_params):
         create_blast_database(subject_file_path, db_path)
 
         # Perform BLAST search
-        blast_output = perform_blast_search(query_file_path, db_path, **blast_params)
-
-        return blast_output
+        return perform_blast_search(query_file_path, db_path, **kwargs)

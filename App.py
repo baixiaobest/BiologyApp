@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QSize, Qt
 from RestrictionEnzymeFinderApp import RestrictionEnzymeFinder
 from DNAToProteinApp import DNAToProteinApp
+from BlastArabidopsisApp import BlastArabidopsisApp
 
 class MainMenu(QMainWindow):
     def __init__(self):
@@ -28,10 +29,12 @@ class MainMenu(QMainWindow):
         self.dna_to_protein_button.clicked.connect(self.launch_dna_to_protein)
         main_layout.addWidget(self.dna_to_protein_button, 0, 1)
 
-        # Create additional buttons
-        self.dna_comparison_button = self.create_button("DNA Comparison\n (DNA 比较)")
-        main_layout.addWidget(self.dna_comparison_button, 0, 2)
+        # Create a button to launch the BlastArabidopsis app
+        self.blast_arabidopsis_button = self.create_button("BLAST Arabidopsis\n (拟南芥BLAST)")
+        self.blast_arabidopsis_button.clicked.connect(self.launch_blast_arabidopsis)
+        main_layout.addWidget(self.blast_arabidopsis_button, 0, 2)
 
+        # Create a placeholder button for Protein Comparison (not implemented yet)
         self.protein_comparison_button = self.create_button("Protein Comparison\n (蛋白质比较)")
         main_layout.addWidget(self.protein_comparison_button, 0, 3)
 
@@ -42,6 +45,7 @@ class MainMenu(QMainWindow):
 
         self.restriction_enzyme_finder_window = None
         self.dna_to_protein_window = None
+        self.blast_arabidopsis_window = None
 
     def create_button(self, text):
         button = QPushButton()
@@ -67,6 +71,11 @@ class MainMenu(QMainWindow):
         if self.dna_to_protein_window is None or not self.dna_to_protein_window.isVisible():
             self.dna_to_protein_window = DNAToProteinApp()
         self.dna_to_protein_window.show()
+
+    def launch_blast_arabidopsis(self):
+        if self.blast_arabidopsis_window is None or not self.blast_arabidopsis_window.isVisible():
+            self.blast_arabidopsis_window = BlastArabidopsisApp()
+        self.blast_arabidopsis_window.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
