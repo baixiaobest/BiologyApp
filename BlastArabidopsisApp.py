@@ -160,9 +160,10 @@ class BlastArabidopsisApp(QMainWindow):
                 self.result_table.setCellWidget(row_position, 5, details_button)
 
     def extract_gene_name(self, title):
-        # This function can be customized to extract gene name from the alignment title.
-        # The implementation can vary depending on the title format.
-        return title.split()[1]
+        if len(title.split()) >= 2:
+            return title.split()[1]
+        else:
+            return "No name"
 
     def show_details(self, hsp, alignment):
         details_window = DetailsWindow(hsp, alignment, self)
@@ -174,7 +175,7 @@ class DetailsWindow(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Alignment Details (比对详情)")
-        self.resize(600, 500)
+        self.resize(800, 600)
 
         layout = QVBoxLayout()
 
@@ -196,19 +197,18 @@ class DetailsWindow(QDialog):
         self.description_field.setFont(QFont("Arial", 10))
         self.description_field.setPlainText(description_text)
         self.description_field.setReadOnly(True)
-        self.description_field.setMinimumHeight(250)
+        self.description_field.setMaximumHeight(250)
         layout.addWidget(self.description_field)
 
         # Matches field
-        matches_text = f"Query:   {hsp.query}\n" \
-                       f"Matches: {hsp.match}\n" \
-                       f"Subject: {hsp.sbjct}"
+        matches_text = self.format_matches_text(hsp.query, hsp.match, hsp.sbjct)
         matches_label = QLabel("Matches (匹配):")
         matches_label.setFont(QFont("Arial", 10))
         layout.addWidget(matches_label)
 
         self.matches_field = QTextEdit()
         monospace_font = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        monospace_font.setPixelSize(20)
         self.matches_field.setFont(monospace_font)
         self.matches_field.setPlainText(matches_text)
         self.matches_field.setReadOnly(True)
@@ -216,6 +216,28 @@ class DetailsWindow(QDialog):
         layout.addWidget(self.matches_field)
 
         self.setLayout(layout)
+
+    def format_matches_text(self, query, match, subject):
+        formatted_text = []
+        line_length = 50
+
+        formatted_text.append("query:   ")
+        formatted_text.append("matches: ")
+        formatted_text.append("subject: ")
+        formatted_text.append("")
+
+        for i in range(0, len(query), line_length):
+            q_seq = query[i:i + line_length]
+            m_seq = match[i:i + line_length]
+            s_seq = subject[i:i + line_length]
+
+            formatted_text.append(f"[{i + 1}-{min(len(query), i + 1 + line_length)}]")
+            formatted_text.append(f"{q_seq}")
+            formatted_text.append(m_seq)
+            formatted_text.append(f"{s_seq}")
+            formatted_text.append("")
+
+        return "\n".join(formatted_text)
 
 
 if __name__ == "__main__":
