@@ -62,10 +62,12 @@ class DetailsWindow(QDialog):
             m_seq = match[i:i + line_length]
             s_seq = subject[i:i + line_length]
 
+            mismatch_found = "  mismatch" if ' ' in m_seq else ""
+
             formatted_text.append(f"[{i + 1}-{min(len(query), i + line_length)}]")
-            formatted_text.append(f"{q_seq}")
-            formatted_text.append(m_seq)
-            formatted_text.append(f"{s_seq}")
+            formatted_text.append(q_seq)
+            formatted_text.append(f"{m_seq}{mismatch_found}")
+            formatted_text.append(s_seq)
             formatted_text.append("")
 
         return "\n".join(formatted_text)

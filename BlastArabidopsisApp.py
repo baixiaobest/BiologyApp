@@ -95,7 +95,7 @@ class BlastArabidopsisApp(QMainWindow):
         self.result_table.setColumnCount(6)
         self.result_table.setHorizontalHeaderLabels([
             "Query sequence\n(查询序列)",
-            "Arabidopsis sequence\n(拟南芥序列)",
+            "Subject sequence\n(比对序列)",
             "E value\n(E值)",
             "Length\n(长度)",
             "Gene Name\n(基因名称)",
