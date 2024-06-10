@@ -62,7 +62,7 @@ class DetailsWindow(QDialog):
             m_seq = match[i:i + line_length]
             s_seq = subject[i:i + line_length]
 
-            formatted_text.append(f"[{i + 1}-{min(len(query), i + 1 + line_length)}]")
+            formatted_text.append(f"[{i + 1}-{min(len(query), i + line_length)}]")
             formatted_text.append(f"{q_seq}")
             formatted_text.append(m_seq)
             formatted_text.append(f"{s_seq}")

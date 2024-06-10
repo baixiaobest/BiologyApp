@@ -1,13 +1,12 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QTextEdit,
-    QTableWidget, QTableWidgetItem, QSpinBox, QWidget, QHeaderView
+    QTableWidget, QTableWidgetItem, QSpinBox, QWidget, QHeaderView, QComboBox
 )
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
-from BlastUtilities import blast_sequence_against_database
+from BlastUtilities import blast_sequence_against_database, blast_two_DNA
+from Utilities import resource_path
 from DetailsWindow import DetailsWindow
-import os
 
 class BlastArabidopsisApp(QMainWindow):
     def __init__(self):
@@ -21,17 +20,35 @@ class BlastArabidopsisApp(QMainWindow):
         self.input_font_size = 10
 
         # Create main layout
-        main_layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
 
         # Create a text input widget for DNA sequence
         self.dna_label = QLabel("Input DNA sequence (输入DNA序列):")
         self.dna_label.setFont(QFont("Arial", self.label_font_size))
-        main_layout.addWidget(self.dna_label)
+        self.main_layout.addWidget(self.dna_label)
 
         self.dna_input = QTextEdit()
         self.dna_input.setFont(QFont("Arial", self.input_font_size))
         self.dna_input.setMaximumHeight(200)
-        main_layout.addWidget(self.dna_input)
+        self.main_layout.addWidget(self.dna_input)
+
+        # Create a dropdown for selecting BLAST target
+        self.blast_target_label = QLabel("Blast against: (BLAST对象):")
+        self.blast_target_label.setFont(QFont("Arial", self.label_font_size))
+        self.main_layout.addWidget(self.blast_target_label)
+
+        self.blast_target_dropdown = QComboBox()
+        self.blast_target_dropdown.addItems(["Arabidopsis", "Input DNA"])
+        self.blast_target_dropdown.setFont(QFont("Arial", self.input_font_size))
+        self.blast_target_dropdown.currentIndexChanged.connect(self.on_blast_target_changed)
+        self.main_layout.addWidget(self.blast_target_dropdown)
+
+        # Create a text input widget for the second DNA sequence
+        self.dna_input_2_label = QLabel("Input second DNA sequence (输入第二DNA序列):")
+        self.dna_input_2_label.setFont(QFont("Arial", self.label_font_size))
+        self.dna_input_2 = QTextEdit()
+        self.dna_input_2.setFont(QFont("Arial", self.input_font_size))
+        self.dna_input_2.setMaximumHeight(200)
 
         # Create a numeric input for E value
         evalue_layout = QHBoxLayout()
@@ -45,7 +62,7 @@ class BlastArabidopsisApp(QMainWindow):
         self.evalue_input.setValue(0)  # Default value
         evalue_layout.addWidget(self.evalue_input)
         evalue_layout.addStretch()
-        main_layout.addLayout(evalue_layout)
+        self.main_layout.addLayout(evalue_layout)
 
         # Create a numeric input for word size
         word_size_layout = QHBoxLayout()
@@ -59,19 +76,19 @@ class BlastArabidopsisApp(QMainWindow):
         self.word_size_input.setValue(11)  # Default value
         word_size_layout.addWidget(self.word_size_input)
         word_size_layout.addStretch()
-        main_layout.addLayout(word_size_layout)
+        self.main_layout.addLayout(word_size_layout)
 
         # Create a blast button
         self.blast_button = QPushButton("BLAST")
         self.blast_button.setFont(QFont("Arial", self.label_font_size))
         self.blast_button.clicked.connect(self.on_blast)
-        main_layout.addWidget(self.blast_button)
+        self.main_layout.addWidget(self.blast_button)
 
         # Create a message label for validation errors and no results
         self.message_label = QLabel("")
         self.message_label.setFont(QFont("Arial", self.label_font_size))
         self.message_label.setStyleSheet("color: red")
-        main_layout.addWidget(self.message_label)
+        self.main_layout.addWidget(self.message_label)
 
         # Create a result display area
         self.result_table = QTableWidget()
@@ -86,12 +103,22 @@ class BlastArabidopsisApp(QMainWindow):
         ])
         header = self.result_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
-        main_layout.addWidget(self.result_table)
+        self.main_layout.addWidget(self.result_table)
 
         # Set the central widget
         container = QWidget()
-        container.setLayout(main_layout)
+        container.setLayout(self.main_layout)
         self.setCentralWidget(container)
+
+    def on_blast_target_changed(self, index):
+        if index == 1:  # "Input DNA" selected
+            self.main_layout.insertWidget(4, self.dna_input_2_label)
+            self.main_layout.insertWidget(5, self.dna_input_2)
+        else:
+            self.main_layout.removeWidget(self.dna_input_2_label)
+            self.dna_input_2_label.setParent(None)
+            self.main_layout.removeWidget(self.dna_input_2)
+            self.dna_input_2.setParent(None)
 
     def on_blast(self):
         dna_sequence = self.dna_input.toPlainText().strip()
@@ -109,20 +136,40 @@ class BlastArabidopsisApp(QMainWindow):
             self.result_table.setRowCount(0)
             return
 
+        blast_target = self.blast_target_dropdown.currentText()
         evalue_exponent = self.evalue_input.value()
         word_size = self.word_size_input.value()
 
-        # Perform BLAST search
-        db_path = os.getcwd() + "\\assets\\TAIRBlastDB/TAIRBlastDB"  # Set your BLAST database path
+        if blast_target == "Arabidopsis":
+            # Perform BLAST search against Arabidopsis
+            db_path = resource_path("assets\\TAIRBlastDB/TAIRBlastDB")  # Set your BLAST database path
+            query_sequence = f">Query\n{dna_sequence}"
+            blast_result = blast_sequence_against_database(
+                query_sequence,
+                db_path,
+                evalue=10 ** evalue_exponent,
+                word_size=word_size
+            )
+        else:
+            # Perform BLAST search against input DNA
+            dna_sequence_2 = self.dna_input_2.toPlainText().strip()
 
-        query_sequence = f">Query\n{dna_sequence}"
+            # Check for empty second input
+            if not dna_sequence_2:
+                self.message_label.setText("Second input DNA sequence cannot be empty.\n第二输入DNA序列不能为空。")
+                self.result_table.setRowCount(0)
+                return
 
-        blast_result = blast_sequence_against_database(
-            query_sequence,
-            db_path,
-            evalue=10 ** evalue_exponent,
-            word_size=word_size
-        )
+            # Validate the second DNA sequence
+            if not self.is_valid_dna_sequence(dna_sequence_2):
+                self.message_label.setText(
+                    "Invalid second DNA sequence. Please enter a sequence containing only A, T, C, G.\n无效第二DNA序列。请输入仅包含A, T, C, G的序列。")
+                self.result_table.setRowCount(0)
+                return
+
+            query_sequence = f">Query\n{dna_sequence}"
+            subject_sequence = f">Subject\n{dna_sequence_2}"
+            blast_result = blast_two_DNA(query_sequence, subject_sequence)
 
         if blast_result["returncode"] != 0:
             self.message_label.setText(f"Error: {blast_result['stderr']}")
@@ -160,10 +207,9 @@ class BlastArabidopsisApp(QMainWindow):
                 self.result_table.setCellWidget(row_position, 5, details_button)
 
     def extract_gene_name(self, title):
-        if len(title.split()) >= 2:
-            return title.split()[1]
-        else:
-            return "No name"
+        # This function can be customized to extract gene name from the alignment title.
+        # The implementation can vary depending on the title format.
+        return title.split()[1]  # Adjusted example: extracting the second word as gene name.
 
     def show_details(self, hsp, alignment):
         details_window = DetailsWindow(hsp, alignment, self)
