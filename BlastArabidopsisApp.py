@@ -123,6 +123,14 @@ class BlastArabidopsisApp(QMainWindow):
     def on_blast(self):
         dna_sequence = self.dna_input.toPlainText().strip()
 
+        # Clear previous results and message
+        self.result_table.setRowCount(0)
+        self.result_table.clearContents()
+        self.message_label.setText("")
+
+        # Process events to update the GUI immediately
+        QApplication.processEvents()
+
         # Check for empty input
         if not dna_sequence:
             self.message_label.setText("Input DNA sequence cannot be empty.\n输入DNA序列不能为空。")
